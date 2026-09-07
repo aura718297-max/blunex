@@ -1,0 +1,94 @@
+<!-- 1. PREREQUISITE: The GSAP Libraries -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+<style>
+    /* 2. THE CSS: Layout must be 100vh */
+    section {
+        width: 100%;
+        height: 100vh; /* Each section must take full screen height */
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: #000;
+        overflow: hidden;
+    }
+
+    .img-wrapper {
+        position: absolute;
+        width: 1000px;
+        height: 700px;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%); /* Centering the image */
+    }
+
+    .img-wrapper img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+</style>
+
+<!-- 3. THE HTML: "pinned" for the effect, "scroll" for the last item -->
+<div class="container">
+    <section class="card pinned">
+        <div class="img-wrapper"><img src="https://picsum.photos/1200/800?1"></div>
+    </section>
+    <section class="card pinned">
+        <div class="img-wrapper"><img src="https://picsum.photos/1200/800?2"></div>
+    </section>
+    <section class="card pinned">
+        <div class="img-wrapper"><img src="https://picsum.photos/1200/800?3"></div>
+    </section>
+    <!-- The last card pushes the others up, so it has class 'scroll' -->
+    <section class="card scroll">
+        <div class="img-wrapper"><img src="https://picsum.photos/1200/800?4"></div>
+    </section>
+</div>
+
+<script>
+    // 4. THE JAVASCRIPT: The logic
+    gsap.registerPlugin(ScrollTrigger);
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const lastCard = document.querySelector(".card.scroll");
+        const pinnedSections = gsap.utils.toArray(".pinned");
+
+        pinnedSections.forEach((section, index, sections) => {
+            const img = section.querySelector("img");
+            const nextSection = sections[index + 1] || lastCard;
+            
+            // Calculate how far to scroll before the next card arrives
+            const distanceToNext = nextSection.offsetTop - section.offsetTop;
+
+            // PIN THE CARD: Makes it stay on screen
+            gsap.to(section, {
+                scrollTrigger: {
+                    trigger: section,
+                    start: "top top",
+                    end: `+=${distanceToNext}`,
+                    pin: true,
+                    pinSpacing: false, // Allows cards to stack on top of each other
+                    scrub: 1
+                }
+            });
+
+            // SCALE THE IMAGE: Makes the image shrink as you scroll
+            gsap.fromTo(img, 
+                { scale: 1 }, 
+                { 
+                    scale: 0.5, 
+                    ease: "none",
+                    scrollTrigger: {
+                        trigger: section,
+                        start: "top top",
+                        end: `top+=${distanceToNext} top`,
+                        scrub: 1
+                    }
+                }
+            );
+        });
+    });
+</script>

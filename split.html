@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triple Gallery Experience</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap');
+
+        :root {
+            --bg-dark: #0F2A3F;
+            --bg-light: #f4f4f4;
+            --bg-grey: #ececec;
+            --accent-pink: #ff3366;
+            --accent-red: #ff4757;
+            --text-dark: #333;
+            --text-light: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* --- 1. SPLIT SLIDER STYLES --- */
+        #split-slider-trigger {
+            height: 500vh;
+            position: relative;
+            background: #000;
+        }
+        #sticky-slider-wrapper {
+            position: sticky;
+            top: -50px;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .slider-inner { width: 100%; height: 100%; display: flex; }
+        .column { flex: 1; position: relative; height: 100%; }
+        .slide { position: absolute; inset: 0; overflow: hidden; clip-path: polygon(0 100%, 100% 100%, 100% 100%, 0 100%); }
+        .slide-0 { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%) !important; }
+        .slide img { width: 100%; height: 100%; object-fit: cover; will-change: transform; }
+        .slide-overlay { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.3); }
+        .copy-block {
+            position: absolute; top: 0; width: 100vw; height: 100%; color: #fff;
+            display: flex; flex-direction: column; justify-content: center;
+            align-items: center; text-align: center; pointer-events: none; will-change: transform;
+        }
+        .left .copy-block { left: 0; }
+        .right .copy-block { right: 0; }
+        .slide-title { font-size: clamp(3rem, 10vw, 8rem); font-weight: 800; text-transform: uppercase; line-height: 0.9; }
+        .slide-tags { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.2em; margin-bottom: 10px; color: var(--accent-pink); }
+
+        .section-spacer { height: 10vh; background-color: var(--bg-dark); }
+        .cardb.pinned:last-of-type { min-height: 100vh; position: relative; z-index: 5; }
+
+        /* --- 2. ORIGINAL HERO STYLES --- */
+        .section-title {
+            text-align: center;
+            padding: 60px 20px 20px;
+            font-size: 2.5rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: -1px;
+        }
+        .hero-scroll-wrapper {
+            height: 300vh;
+            position: relative;
+            background-color: var(--bg-dark);
+        }
+        .sticky-viewport {
+            position: sticky;
+            top: 0;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+        .hero-content {
+            text-align: center;
+            max-width: 600px;
+            padding: 20px;
+            z-index: 1;
+            opacity: 0;
+            transform: scale(0.8);
+            transition: opacity 0.6s, transform 0.6s;
+            color: var(--text-light);
+        }
+        .hero-content.visible { opacity: 1; transform: scale(1); }
+        .hero-logo { font-size: 4rem; font-weight: 800; color: var(--accent-pink); margin-bottom: 10px; font-style: italic; }
+        .hero-desc { font-size: 1.2rem; line-height: 1.6; color: #aaa; margin-bottom: 30px; }
+        .diagonal-grid {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2;
+            pointer-events: none;
+        }
+        .diag-row { display: flex; gap: 20px; margin-bottom: 20px; }
+        .diag-card { width: 850px; height: 450px; border-radius: 20px; overflow: hidden; background: #222; }
+        .diag-card img { width: 100%; height: 100%; object-fit: cover; }
+        .scroll-hint {
+            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+            color: white; font-size: 0.7rem; letter-spacing: 3px;
+            text-transform: uppercase; animation: bounce 2s infinite;
+        }
+
+        /* --- 3. CASE STUDIES & HEX GALLERY STYLES --- */
+        .minimal-section { background: var(--bg-light); padding: 100px 20px; color: var(--text-dark); }
+        .min-grid { display: grid; grid-template-columns: repeat(auto-fit, 300px); gap: 20px; justify-content: center; max-width: 1200px; margin: 0 auto; }
+        .min-item { position: relative; aspect-ratio: 1; overflow: hidden; background: #000; cursor: pointer; }
+        .min-item img { width: 100%; height: 100%; object-fit: cover; transition: .6s; }
+        .min-hover { position: absolute; inset: 0; opacity: 0; transition: .5s; background: rgba(255,255,255,.9); display: flex; flex-direction: column; justify-content: center; padding: 20px; }
+        .min-tl { top: -10%; left: -10%; clip-path: polygon(0 0, 100% 0, 100% 70%, 70% 100%, 0 100%); }
+        .min-br { bottom: -10%; right: -10%; clip-path: polygon(30% 0, 100% 0, 100% 100%, 0 100%, 0 30%); text-align: right; align-items: flex-end; }
+        .min-btn { position: absolute; bottom: 15px; left: 50%; transform: translate(-50%, 30px); background: var(--accent-red); color: #fff; border: 0; padding: 8px 20px; border-radius: 4px; font-weight: 700; opacity: 0; transition: .4s; }
+        .min-item:hover img { filter: grayscale(1) brightness(.5); transform: scale(1.1); }
+        .min-item:hover .min-hover { opacity: 1; inset: 0; }
+        .min-item:hover .min-btn { opacity: 1; transform: translate(-50%, 0); }
+        
+        .hex-section { background-color: var(--bg-grey); padding: 100px 20px; }
+        .hex-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; max-width: 1100px; margin: 0 auto; }
+        .hex-item { position: relative; aspect-ratio: 1 / 1; overflow: hidden; background: #000; cursor: pointer; }
+        .hex-item img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s ease, filter 0.6s ease; }
+        .hex-box { position: absolute; background: rgba(255, 255, 255, 0.95); padding: 20px; width: 55%; height: 55%; transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1); opacity: 0; display: flex; flex-direction: column; justify-content: center; color: var(--text-dark); }
+        .hex-tl { top: -10%; left: -10%; clip-path: polygon(0% 0%, 100% 0%, 100% 70%, 70% 100%, 0% 100%); }
+        .hex-br { bottom: -10%; right: -10%; clip-path: polygon(30% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 30%); text-align: right; align-items: flex-end; }
+        .hex-num { font-size: 2rem; font-weight: bold; color: #aaa; margin: 0; }
+        .hex-title { font-size: 0.9rem; font-weight: bold; text-transform: uppercase; margin: 5px 0; }
+        .hex-sub { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #666; }
+        .hex-btn { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(30px); background: var(--accent-red); color: white; border: none; padding: 12px 30px; border-radius: 5px; font-weight: bold; opacity: 0; transition: all 0.4s ease; }
+        .hex-item:hover img { transform: scale(1.1); filter: grayscale(1) brightness(0.6); }
+        .hex-item:hover .hex-tl { top: 0; left: 0; opacity: 1; }
+        .hex-item:hover .hex-br { bottom: 0; right: 0; opacity: 1; }
+        .hex-item:hover .hex-btn { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        @keyframes bounce { 0%, 20%, 50%, 80%, 100% {transform: translateY(0) translateX(-50%);} 40% {transform: translateY(-10px) translateX(-50%);} 60% {transform: translateY(-5px) translateX(-50%);} }
+        @media (max-width: 768px) { .diag-card { width: 160px; height: 120px; } .hero-logo { font-size: 2.5rem; } .min-grid { grid-template-columns: 1fr; max-width: 300px; } }
+    </style>
+</head>
+<body>
+    <header><div id="header-load"></div></header>
+   <div class="section-spacer">
+    <section class="cardb pinned">
+    <!-- SECTION 1: SPLIT SCROLL -->
+    <div id="split-slider-trigger">
+        <div id="sticky-slider-wrapper">
+            <div class="slider-inner">
+                <div class="column left"></div>
+                <div class="column right"></div>
+            </div>
+        </div>
+    </div>
+    </section>
+    <!-- <div class="section-spacer"></div> -->
+    <section class="cardb pinned">
+    <!-- SECTION 2: DIAGONAL HERO -->
+    <div class="hero-scroll-wrapper" id="heroSection">
+        <div class="sticky-viewport">
+            <div class="hero-content" id="heroContent">
+                <div class="hero-logo">STUDIO</div>
+                <p class="hero-desc">Experience the intersection of motion and design. Scroll down to witness our collection emerge from the shadows.</p>
+                <div style="color: var(--accent-pink); font-weight: bold;">KEEP SCROLLING</div>
+            </div>
+            <div class="diagonal-grid">
+                <div class="diag-row">
+                    <div class="diag-card" id="c1"><img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80"></div>
+                    <div class="diag-card" id="c2"><img src="https://images.unsplash.com/photo-1614850523296-d8c1af93d400?auto=format&fit=crop&w=600&q=80"></div>
+                </div>
+                <div class="diag-row">
+                    <div class="diag-card" id="c3"><img src="https://images.unsplash.com/photo-1634157703702-3c124b455499?auto=format&fit=crop&w=600&q=80"></div>
+                    <div class="diag-card" id="c4"><img src="https://images.unsplash.com/photo-1618556450991-2f1af64e8191?auto=format&fit=crop&w=600&q=80"></div>
+                </div>
+                <div class="diag-row">
+                    <div class="diag-card" id="c5"><img src="https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&w=600&q=80"></div>
+                    <div class="diag-card" id="c6"><img src="https://images.unsplash.com/photo-1633356122544-f134324a6cee?auto=format&fit=crop&w=600&q=80"></div>
+                </div>
+            </div>
+            <div class="scroll-hint">SCROLL TO UNVEIL</div>
+        </div>
+    </div>
+    </section>
+    <section class="cardb pinned">
+    <!-- SECTION 3: CASE STUDIES (MINIMAL GRID) -->
+    <div class="minimal-section">
+        <h2 class="section-title">Case Studies</h2>
+        <div class="min-grid">
+            <div class="min-item">
+                <img src="https://picsum.photos/400?1">
+                <div class="min-hover min-tl"><h2>01</h2><p>Silk Fabrics</p></div>
+                <div class="min-hover min-br"><p>2018<br>Style Guide</p></div>
+                <button class="min-btn">REVIEW</button>
+            </div>
+            <div class="min-item">
+                <img src="https://picsum.photos/400?2">
+                <div class="min-hover min-tl"><h2>02</h2><p>Secure Art</p></div>
+                <div class="min-hover min-br"><p>2022<br>3D Concept</p></div>
+                <button class="min-btn">REVIEW</button>
+            </div>
+            <div class="min-item">
+                <img src="https://picsum.photos/400?3">
+                <div class="min-hover min-tl"><h2>03</h2><p>Winter Wear</p></div>
+                <div class="min-hover min-br"><p>2023<br>Trendy Mart</p></div>
+                <button class="min-btn">REVIEW</button>
+            </div>
+        </div>
+    </div>
+    </section>
+    <section class="cardb pinned">
+    <!-- SECTION 4: FEATURED WORK (HEX GALLERY) -->
+    <div class="hex-section">
+        <h2 class="section-title" style="color: #333;">Featured Work</h2>
+        <div class="hex-container">
+            <div class="hex-item">
+                <img src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&q=80&w=800">
+                <div class="hex-box hex-tl"><p class="hex-num">01</p><p class="hex-title">Fashion Silk</p></div>
+                <div class="hex-box hex-br"><p class="hex-sub">High End Style</p></div>
+                <button class="hex-btn">EXPLORE</button>
+            </div>
+            <div class="hex-item">
+                <img src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&q=80&w=800">
+                <div class="hex-box hex-tl"><p class="hex-num">02</p><p class="hex-title">Modern Lab</p></div>
+                <div class="hex-box hex-br"><p class="hex-sub">Tech Research</p></div>
+                <button class="hex-btn">EXPLORE</button>
+            </div>
+            <div class="hex-item">
+                <img src="https://images.unsplash.com/photo-1539109132381-311107728958?auto=format&fit=crop&q=80&w=800">
+                <div class="hex-box hex-tl"><p class="hex-num">03</p><p class="hex-title">Winter Mart</p></div>
+                <div class="hex-box hex-br"><p class="hex-sub">Urban Collection</p></div>
+                <button class="hex-btn">EXPLORE</button>
+            </div>
+            <div class="hex-item">
+                <img src="https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&q=80&w=800">
+                <div class="hex-box hex-tl"><p class="hex-num">04</p><p class="hex-title">Nano Tech</p></div>
+                <div class="hex-box hex-br"><p class="hex-sub">Digital Future</p></div>
+                <button class="hex-btn">EXPLORE</button>
+            </div>
+        </div>
+    </div>
+    <footer><div id="footer-load"></div></footer>
+    </div>
+    </section>
+<script>
+        /* --- 1. SPLIT SLIDER LOGIC --- */
+        const slideData = [
+            { title: "StudioForm", tags: "Space & Design", img: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1400" },
+            { title: "NightBloom", tags: "Art Direction", img: "https://images.unsplash.com/photo-1490730141103-6cac27aaab94?w=1400" },
+            { title: "StillPose", tags: "Body & Practice", img: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=1400" },
+            { title: "MatchaWork", tags: "Product Story", img: "https://images.unsplash.com/photo-1515825838458-f2a94b20105a?w=1400" }
+        ];
+
+        const cols = { left: document.querySelector('.column.left'), right: document.querySelector('.column.right') };
+        slideData.forEach((data, i) => {
+            ['left', 'right'].forEach(side => {
+                const div = document.createElement('div');
+                div.className = `slide slide-${i}`;
+                div.style.zIndex = i;
+                div.innerHTML = `<img src="${data.img}"><div class="slide-overlay"></div><div class="copy-block"><div class="slide-tags">${data.tags}</div><h2 class="slide-title">${data.title}</h2></div>`;
+                cols[side].appendChild(div);
+            });
+        });
+
+        function updateSplitSlider() {
+            const trigger = document.getElementById('split-slider-trigger');
+            const rect = trigger.getBoundingClientRect();
+            let progress = -rect.top / (rect.height - window.innerHeight);
+            progress = Math.max(0, Math.min(0.999, progress));
+            const currentScrollVal = progress * (slideData.length - 1);
+
+            ['left', 'right'].forEach(side => {
+                const slides = cols[side].querySelectorAll('.slide');
+                slides.forEach((slide, index) => {
+                    const amount = currentScrollVal - index;
+                    if (amount >= 0) {
+                        slide.style.clipPath = `polygon(0 0, 100% 0, 100% 100%, 0 100%)`;
+                        const textDrift = side === 'left' ? amount * 100 : amount * -100;
+                        slide.querySelector('.copy-block').style.transform = `translateY(${textDrift}px)`;
+                    } else if (amount > -1 && amount < 0) {
+                        const percent = (amount + 1) * 100;
+                        slide.style.clipPath = side === 'left' 
+                            ? `polygon(0 ${100 - percent}%, 100% ${100 - percent}%, 100% 100%, 0 100%)`
+                            : `polygon(0 0, 100% 0, 100% ${percent}%, 0 ${percent}%)`;
+                        const textDrift = side === 'left' ? (1 - (amount + 1)) * -100 : (1 - (amount + 1)) * 100;
+                        slide.querySelector('.copy-block').style.transform = `translateY(${textDrift}px)`;
+                    } else {
+                        slide.style.clipPath = side === 'left' ? `polygon(0 100%, 100% 100%, 100% 100%, 0 100%)` : `polygon(0 0, 100% 0, 100% 0, 0 0)`;
+                    }
+                });
+            });
+        }
+
+        /* --- 2. ORIGINAL HERO LOGIC --- */
+        const heroSection = document.getElementById('heroSection');
+        const heroContent = document.getElementById('heroContent');
+        const diagonalGrid = document.querySelector('.diagonal-grid');
+        const cards = [
+            document.getElementById('c1'), document.getElementById('c2'),
+            document.getElementById('c3'), document.getElementById('c4'),
+            document.getElementById('c5'), document.getElementById('c6')
+        ];
+
+        const fitGridToScreen = () => {
+            if (window.innerWidth > 768) {
+                const gridTotalHeight = 1400; 
+                const screenHeight = window.innerHeight;
+                const scaleFactor = (screenHeight * 0.9) / gridTotalHeight;
+                diagonalGrid.style.transformOrigin = 'center center';
+                diagonalGrid.style.transform = `scale(${scaleFactor})`;
+            } else {
+                diagonalGrid.style.transform = `scale(1)`;
+            }
+        };
+
+        window.addEventListener('load', fitGridToScreen);
+        window.addEventListener('resize', fitGridToScreen);
+
+        window.addEventListener('scroll', () => {
+            updateSplitSlider();
+
+            const rect = heroSection.getBoundingClientRect();
+            const sectionTop = window.scrollY + rect.top;
+            const sectionHeight = heroSection.offsetHeight - window.innerHeight;
+            const rawPercent = (window.scrollY - sectionTop) / sectionHeight;
+            
+            const delayThreshold = 0.3; 
+            let scrollPercent = 0;
+            if (rawPercent > delayThreshold) {
+                scrollPercent = (rawPercent - delayThreshold) / (1 - delayThreshold);
+            }
+            scrollPercent = Math.min(Math.max(scrollPercent, 0), 1);
+
+            const moveVal = scrollPercent * 250; 
+            const rotateVal = scrollPercent * 30;
+            const opacityVal = 1 - (scrollPercent * 1.2);
+
+            if(cards[0]) cards[0].style.transform = `translate(${-moveVal}%, ${-moveVal}%) rotate(${-rotateVal}deg)`;
+            if(cards[1]) cards[1].style.transform = `translate(${moveVal}%, ${-moveVal}%) rotate(${rotateVal}deg)`;
+            if(cards[2]) cards[2].style.transform = `translate(${-moveVal * 1.5}%, 0%) rotate(${-rotateVal}deg)`;
+            if(cards[3]) cards[3].style.transform = `translate(${moveVal * 1.5}%, 0%) rotate(${rotateVal}deg)`;
+            if(cards[4]) cards[4].style.transform = `translate(${-moveVal}%, ${moveVal}%) rotate(${-rotateVal}deg)`;
+            if(cards[5]) cards[5].style.transform = `translate(${moveVal}%, ${moveVal}%) rotate(${rotateVal}deg)`;
+
+            cards.forEach(card => { if(card) card.style.opacity = opacityVal; });
+
+            if (scrollPercent > 0.4) heroContent.classList.add('visible');
+            else heroContent.classList.remove('visible');
+        });
+
+        /* --- 3. COMPONENT LOADING --- */
+        async function loadComponents() {
+            try {
+                const headerRes = await fetch('header.html');
+                if (headerRes.ok) document.getElementById('header-load').innerHTML = await headerRes.text();
+                
+                const footerRes = await fetch('footer.html');
+                if (footerRes.ok) {
+                    document.getElementById('footer-load').innerHTML = await footerRes.text();
+                    const footerYear = document.getElementById('footer-year');
+                    if (footerYear) footerYear.textContent = new Date().getFullYear();
+                }
+                initMenu();
+            } catch (e) { console.log("Header/Footer fetch error"); }
+        }
+
+        function initMenu() {
+            const toggle = document.querySelector('.hamburger-toggle');
+            const nav = document.querySelector('.main-nav');
+            if (toggle && nav) {
+                toggle.onclick = () => {
+                    toggle.classList.toggle('active');
+                    nav.classList.toggle('open');
+                };
+            }
+        }
+
+        updateSplitSlider();
+        loadComponents();
+        /* --- 4. SECTION STACKING --- */
+    gsap.registerPlugin(ScrollTrigger);
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const lastCard = document.querySelector("section.cardb:last-of-type");
+        const pinnedSections = gsap.utils.toArray("section.cardb.pinned").slice(2, -1);
+
+        pinnedSections.forEach((section, index, sections) => {
+            const nextSection = sections[index + 1] || lastCard;
+            const distanceToNext = nextSection.offsetTop - section.offsetTop;
+
+            gsap.to(section, {
+                scrollTrigger: {
+                    trigger: section,
+                    start: "top top",
+                    end: `+=${distanceToNext}`,
+                    pin: true,
+                    pinSpacing: false, // Allows cards to stack on top of each other
+                    scrub: 1
+                }
+            });
+        });
+    });
+</script>
+<script src="script.js"></script>
+</body>
+</html>

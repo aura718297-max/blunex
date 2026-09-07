@@ -1,0 +1,2 @@
+# blunex
+portifolio

@@ -101,9 +101,7 @@
     animate();
 })();
 
-if (typeof gsap !== 'undefined' && typeof SplitText !== 'undefined') {
-    gsap.registerPlugin(SplitText);
-
+if (typeof gsap !== 'undefined') {
     gsap.from(".logo", {
         x: '-100%',
         duration: 1
@@ -132,16 +130,25 @@ if (typeof gsap !== 'undefined' && typeof SplitText !== 'undefined') {
         delay: 1
     });
 
-    const split = SplitText.create("h1", { type: "words, chars" });
-
-    gsap.from(split.words, {
-        y: -100,
-        opacity: 0,
-        rotation: "random(-80, 80)",
-        duration: 1.2,
-        ease: "back",
-        stagger: 0.25
-    });
+    if (typeof SplitText !== 'undefined') {
+        gsap.registerPlugin(SplitText);
+        const split = SplitText.create("h1", { type: "words, chars" });
+        gsap.from(split.words, {
+            y: -100,
+            opacity: 0,
+            rotation: "random(-80, 80)",
+            duration: 1.2,
+            ease: "back",
+            stagger: 0.25
+        });
+    } else {
+        gsap.from("h1", {
+            y: -50,
+            opacity: 0,
+            duration: 1.2,
+            ease: "power2.out"
+        });
+    }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -445,5 +452,54 @@ function goToPage(index) {
         });
     });
 })();
+
+// GSAP Stacked Card Pinning Effect (from ai_studio_code (3).html)
+document.addEventListener("DOMContentLoaded", () => {
+    if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') return;
+
+    gsap.registerPlugin(ScrollTrigger);
+
+    const lastCard = document.querySelector(".card.scroll");
+    const pinnedSections = gsap.utils.toArray(".card.pinned");
+
+    if (!pinnedSections.length) return;
+
+    pinnedSections.forEach((section, index, sections) => {
+        const innerWrapper = section.querySelector('.container-about, .ag-page-container, .vibe-container, .cr-container, .ai-reel-scene') || section;
+        const nextSection = sections[index + 1] || lastCard;
+        if (!nextSection) return;
+
+        // PIN THE CARD: Keeps section fixed on screen while next card slides over top
+        gsap.to(section, {
+            scrollTrigger: {
+                trigger: section,
+                start: "top top",
+                endTrigger: nextSection,
+                end: "top top",
+                pin: true,
+                pinSpacing: false, // Allows cards to stack on top of each other
+                scrub: 1
+            }
+        });
+
+        // SCALE THE CONTENT: Shrinks & fades inner content as you scroll into the next section
+        gsap.fromTo(innerWrapper, 
+            { scale: 1, opacity: 1 }, 
+            { 
+                scale: 0.82, 
+                opacity: 0.4,
+                ease: "none",
+                scrollTrigger: {
+                    trigger: section,
+                    start: "top top",
+                    endTrigger: nextSection,
+                    end: "top top",
+                    scrub: 1
+                }
+            }
+        );
+    });
+});
+
 
 

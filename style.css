@@ -4,8 +4,7 @@
     min-height:100vh;
     width:100vw;
     max-width:100vw;
-    /* margin:4rem calc(-1 * var(--page-padding)); */
-    margin-left:-50px;
+    margin:0;
     padding:7rem 2rem 3rem;
     background:linear-gradient(135deg,#071828 0%,#0F2A3F 55%,#16384c 100%);
     color:#dfe5ef;
@@ -176,7 +175,7 @@ body {
     color:var(--text-color);
     font-family:"Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
     font-size:18px;
-    padding:var(--page-padding);
+    padding:0;
     overflow-x:hidden
 }
 .hero-wrapper {
@@ -484,8 +483,8 @@ video {
     radial-gradient(circle at 100% 50%, transparent var(--ag-notch), black calc(var(--ag-notch) + 1px));
     mask-image:radial-gradient(circle at 0% 50%, transparent var(--ag-notch), black calc(var(--ag-notch) + 1px)),
     radial-gradient(circle at 100% 50%, transparent var(--ag-notch), black calc(var(--ag-notch) + 1px));
-    transition:height 0.5s ease;
-    mask-composite:intersect
+    transition:transform 0.45s ease, box-shadow 0.35s ease;
+    will-change:transform
 }
 .ag-card-image {
     width:100%;
@@ -493,13 +492,14 @@ video {
     position:absolute;
     top:0;
     left:0;
-    transition:transform 6s ease-in-out
+    transition:transform 0.6s ease-in-out
 }
 .ag-card:hover {
-    height:520px
+    transform:translateY(-8px) scale(1.03);
+    box-shadow:0 30px 60px rgba(0,0,0,0.45);
 }
 .ag-card:hover .ag-card-image {
-    transform:translateY(calc(-100% + 520px))
+    transform:translateY(-18px) scale(1.05);
 }
 .ag-card-label {
     position:absolute;
@@ -516,8 +516,8 @@ video {
 }
 #vibe-gallery-root {
     position:relative;
-    margin:3rem auto 0;
-    width:min(1400px, calc(100% - 2rem));
+    margin:0;
+    width:100vw;
     min-height:100vh;
     padding:80px 50px;
     display:flex;
@@ -525,8 +525,8 @@ video {
     align-items:center;
     justify-content:center;
     overflow:hidden;
-    border-radius:40px;
-    border:1px solid rgba(255, 255, 255, 0.08);
+    border-radius:0;
+    border:none;
     background:linear-gradient(135deg, rgba(73, 101, 123, 0.96) 0%, rgba(60, 84, 102, 0.96) 45%, rgba(43, 63, 78, 0.96) 100%);
     background-color:var(--bg-color);
     font-family:"Inter", sans-serif
@@ -620,7 +620,7 @@ video {
     height:100%;
     object-fit:cover;
     display:block;
-    transition:5s linear;
+    transition:0.6s ease;
     filter:brightness(0.9) grayscale(0.1)
 }
 .vibe-card:hover .vibe-img-bx {
@@ -733,8 +733,8 @@ video {
     justify-content:center;
     align-items:center;
     padding:40px;
-    margin:3rem 0 0;
-    border-radius:40px;
+    margin:0;
+    border-radius:0;
     box-sizing:border-box
 }
 .cr-content-box {
@@ -1010,10 +1010,11 @@ textarea {
 }
 .flex {
     width:100vw;
+    min-height:100vh;
     gap:40px;
     padding:20px;
     max-width:100vw;
-    margin-left:calc(-1 * var(--page-padding));
+    margin-left:0;
     box-sizing:border-box;
     display:flex;
     flex-direction:column;
@@ -1031,13 +1032,14 @@ textarea {
     margin-top:0
 }
 .container {
-    width:100%;
-    height:auto;
-    max-width:1400px;
-    margin:auto;
+    width:100vw;
+    height:100vh;
+    max-width:100vw;
+    margin:0;
     position:relative;
     background-color:var(--bg-color);
-    border-radius:60px
+    border-radius:0;
+    overflow:hidden
 }
 .clip-shape1 {
     position:absolute;
@@ -1061,14 +1063,14 @@ textarea {
     z-index:1
 }
 .abouts {
-    margin:50px;
+    margin:0;
     position:relative;
-    border-radius:50px;
+    border-radius:0;
     padding:4rem 5rem 5rem;
     background:#071828;
-    max-width:1400px;
-    margin-left:auto;
-    margin-right:auto
+    width:100vw;
+    max-width:100vw;
+    box-sizing:border-box
 }
 .bg-blob,
 .sheen {
@@ -1860,3 +1862,125 @@ input:focus, textarea:focus {
         transition-duration:0.01ms
     }
 }
+
+/* --- GSAP STACKED CARD EFFECT (from ai_studio_code (3).html) --- */
+.card.pinned,
+.card.scroll {
+    position: relative;
+    width: 100vw;
+    max-width: 100vw;
+    box-sizing: border-box;
+    overflow: hidden;
+    will-change: transform;
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.card.pinned {
+    min-height: 100vh;
+    box-shadow: 0 -20px 50px rgba(0, 0, 0, 0.6);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.abouts.card.pinned {
+    background: linear-gradient(135deg, #071828 0%, #0F2A3F 100%);
+    z-index: 10;
+    padding: 5rem;
+    border-radius: 0;
+    margin: 0;
+    max-width: 100vw;
+}
+
+#ag-section-wrapper.card.pinned {
+    background: #061522;
+    z-index: 20;
+    min-height: 100vh;
+    padding: 4rem 0;
+    margin: 0;
+}
+
+#vibe-gallery-root.card.pinned {
+    background: linear-gradient(135deg, #0d273a 0%, #16384c 100%);
+    z-index: 30;
+    margin: 0;
+    width: 100vw;
+    max-width: 100vw;
+    border-radius: 0;
+    padding: 60px 20px;
+}
+
+.reviews.card.pinned {
+    background: #081a28;
+    z-index: 40;
+    min-height: 100vh;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 0;
+}
+
+.ai-reel-section.card.pinned {
+    background: linear-gradient(135deg, #071828 0%, #0F2A3F 55%, #16384c 100%);
+    z-index: 50;
+    margin-left: 0;
+    max-width: 100vw;
+    min-height: 100vh;
+}
+
+section.flex.card.scroll {
+    position: relative;
+    z-index: 60;
+    background: #05131f;
+    box-shadow: 0 -30px 70px rgba(0, 0, 0, 0.9);
+    min-height: 100vh;
+    margin: 0;
+}
+
+/* Ensure cr-reviews-section fills full width */
+.reviews.card.pinned .cr-reviews-section {
+    border-radius: 0;
+    margin: 0;
+    width: 100%;
+}
+
+/* Ensure ai-reel-section fills full width */
+.ai-reel-section.card.pinned {
+    margin-left: 0 !important;
+    width: 100vw !important;
+}
+
+/* Fix: ensure pinned/fullscreen sections are not offset by page padding */
+.card.pinned {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+}
+
+/* Specific override for ag-section which previously used negative page padding */
+#ag-section-wrapper.card.pinned {
+    margin-left: 0 !important;
+    height: 100vh;
+}
+
+/* Responsive: make .flex a row on desktop, column on tablets/mobile */
+@media (min-width: 1025px) {
+    .flex {
+        flex-direction:row;
+        align-items:stretch;
+        gap:40px;
+        padding:40px;
+    }
+    .flex > .sfg-section,
+    .flex > .contact {
+        width:50%;
+        max-width:none;
+    }
+    .form-container {
+        margin-top:0;
+        max-width:none;
+    }
+}
+
